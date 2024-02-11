@@ -3,7 +3,7 @@ const {join} = require("path")
 const {readdirSync} = require("node:fs")
 
 // connect to mongodb
-mongoose.connect("mongodb://127.0.0.1:27017/bookshop").then(() => console.log("Connected to Mongo DB")).catch(() => console.error("failed to connect to Mongo"))
+mongoose.connect(process.env.DB_PATH || process.env.DATABASE_URL || "mongodb://127.0.0.1:27017/bookshop").then(() => console.log("Connected to Mongo DB")).catch(() => console.error("failed to connect to Mongo"))
 
 
 // load schemas
