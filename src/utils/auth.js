@@ -1,5 +1,5 @@
 const { compareSync } = require("bcrypt");
-const {User} = require("../db/Schemas/userSchema");
+const {User} = require("../db/schemas/userSchema");
 const {ObjectId} = require("mongoose").SchemaTypes
 /**
  * 
