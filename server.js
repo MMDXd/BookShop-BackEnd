@@ -10,7 +10,8 @@ require("./src/db")
 
 
 // middlewares
-app.use("/bookImages", express.static(join(process.cwd(), "./bookImages")))
+app.use("/bookImages", express.static(join(process.cwd(), "./data/bookImages")))
+app.use("/userImages", express.static(join(process.cwd(), "./data/userImages")))
 app.use(express.json())
 app.use(cors())
 app.use(express.urlencoded({extended: true}))

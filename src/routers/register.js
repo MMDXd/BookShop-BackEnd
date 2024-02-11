@@ -6,7 +6,7 @@ const { User } = require("../db/schemas/userSchema")
 const registerFields = [
     body("email").isEmail(),
     body("password"),
-    body("fullname"),
+    body("fullname").isString().notEmpty(),
     body("phone_number").isMobilePhone("fa-IR"),
 ]
 
