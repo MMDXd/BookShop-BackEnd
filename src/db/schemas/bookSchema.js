@@ -1,5 +1,4 @@
 const { Schema, model, modelNames } = require("mongoose")
-
 const bookSchema = new Schema({
     totalSells: Number,
     price: Number,
@@ -9,7 +8,7 @@ const bookSchema = new Schema({
     filter: String
 })
 
-const book = modelNames().includes("book")?model("book"):model("book", bookSchema)
+const book = model("book", bookSchema)
 
 
 module.exports = {book}

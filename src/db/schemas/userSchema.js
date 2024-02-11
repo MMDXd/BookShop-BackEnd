@@ -8,6 +8,6 @@ const userSchema = new Schema({
     isAdmin: Boolean
 })
 
-let User = modelNames().includes("User")?model("User"):model("User", userSchema)
+let User = model("User", userSchema)
 
 module.exports = { User }
