@@ -3,6 +3,7 @@ const {join} = require("path")
 const session = require("express-session")
 const MongoStore = require("connect-mongo");
 const { default: mongoose } = require("mongoose");
+const cors = require("cors");
 const app = express()
 // initialize database
 require("./src/db")
@@ -11,6 +12,7 @@ require("./src/db")
 // middlewares
 app.use("/bookImages", express.static(join(process.cwd(), "./bookImages")))
 app.use(express.json())
+app.use(cors())
 app.use(express.urlencoded({extended: true}))
 
 // session
