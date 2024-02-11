@@ -21,6 +21,6 @@ Router.get("/", async (req, res) => {
 
 module.exports = {
     version: 1,
-    route: "/comments",
+    route: "comments",
     exec: Router
 }
