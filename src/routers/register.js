@@ -2,7 +2,6 @@ const Router = require("express").Router()
 const {body, validationResult} = require("express-validator")
 const { User } = require("../db/schemas/userSchema")
 
-
 const registerFields = [
     body("email").isEmail(),
     body("password"),

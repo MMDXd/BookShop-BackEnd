@@ -1,4 +1,4 @@
-const {Schema, SchemaTypes, model} = require("mongoose")
+const {Schema, SchemaTypes, model, models} = require("mongoose")
 
 const commentSchema = new Schema({
     sender: SchemaTypes.ObjectId,
@@ -6,6 +6,6 @@ const commentSchema = new Schema({
 })
 
 
-const comment = model("comment", commentSchema)
+const comment = models.comment || model("comment", commentSchema)
 
 module.exports = { comment }

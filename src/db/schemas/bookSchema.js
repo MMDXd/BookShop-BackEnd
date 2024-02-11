@@ -1,4 +1,4 @@
-const { Schema, model, modelNames } = require("mongoose")
+const { Schema, model, modelNames, models } = require("mongoose")
 const bookSchema = new Schema({
     totalSells: Number,
     price: Number,
@@ -8,7 +8,7 @@ const bookSchema = new Schema({
     filter: String
 })
 
-const book = model("book", bookSchema)
+const book = models.book || model("book", bookSchema)
 
 
 module.exports = {book}
