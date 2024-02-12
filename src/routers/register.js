@@ -25,6 +25,6 @@ Router.post("/", registerFields, async (req, res) => {
 
 module.exports = {
     version: 1,
-    route: "/register",
+    route: "register",
     exec: Router
 }

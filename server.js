@@ -5,6 +5,14 @@ const MongoStore = require("connect-mongo");
 const { default: mongoose } = require("mongoose");
 const cors = require("cors");
 const app = express()
+app.use(cors());
+app.use(function(req, res, next) {
+    res.header('Access-Control-Allow-Credentials', true);
+    res.header('Access-Control-Allow-Origin', req.headers.origin);
+    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
+    res.header('Access-Control-Allow-Headers', 'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept');
+    next();
+});
 // initialize database
 require("./src/db")
 
@@ -13,7 +21,6 @@ require("./src/db")
 app.use("/bookImages", express.static(join(process.cwd(), "./data/bookImages")))
 app.use("/userImages", express.static(join(process.cwd(), "./data/userImages")))
 app.use(express.json())
-app.use(cors())
 app.use(express.urlencoded({extended: true}))
 
 // session
@@ -26,13 +33,18 @@ const GStore = MongoStore.create({
   });
 app.use(session({
     secret: "HiImSoSecureYouCantHackMyComputer:)",
-    cookie: {maxAge: (24 * (60 * (60 * 1000)))},
+    cookie: {
+        maxAge: (24 * (60 * (60 * 1000))),
+        secure: true
+    },
+    key: "TOKEN",
     resave: false,
     saveUninitialized: true,
     store: GStore
 }))
 // load routers
 require("./src/utils/routerApiLoader")(app)
+
 
 
 const port = process.env.PORT || 3000
