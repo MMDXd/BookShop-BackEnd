@@ -5,7 +5,10 @@ const MongoStore = require("connect-mongo");
 const { default: mongoose } = require("mongoose");
 const cors = require("cors");
 const app = express()
-app.use(cors());
+app.use(cors({
+    credentials: true,
+    origin: "https://sajjad1-moeis.github.io"
+}));
 // initialize database
 require("./src/db")
 
@@ -28,7 +31,7 @@ app.use(session({
     secret: "HiImSoSecureYouCantHackMyComputer:)",
     cookie: {
         maxAge: (24 * (60 * (60 * 1000))),
-        secure: true
+        secure: "auto",
     },
     key: "TOKEN",
     resave: false,
