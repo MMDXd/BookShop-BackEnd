@@ -7,7 +7,10 @@ const userSchema = new Schema({
     password: String,
     salt: String,
     fullname: String,
-    isAdmin: Boolean,
+    isAdmin: {
+        type: Boolean,
+        default: false
+    },
     profileURLPath: {
         type: String,
         default: "/userImages/noProfile.jpg"

@@ -10,7 +10,7 @@ Router.get("/mydata", async (req, res) => {
     const userdata = await getUserDataById(req.session.user._id)
     userdata.user.password = undefined
     userdata.user.salt = undefined
-    return res.json({login: true, userdata})
+    return res.json({login: true, userdata: userdata.user})
 })
 
 
