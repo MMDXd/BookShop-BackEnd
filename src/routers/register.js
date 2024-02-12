@@ -6,7 +6,6 @@ const registerFields = [
     body("email").isEmail(),
     body("password"),
     body("fullname").isString().notEmpty(),
-    body("phone_number").isMobilePhone("fa-IR"),
 ]
 
 Router.post("/", registerFields, async (req, res) => {
@@ -14,11 +13,11 @@ Router.post("/", registerFields, async (req, res) => {
     if (!validate.isEmpty()) {
         return res.status(400).json({message: validate.array({onlyFirstError: true})[0]})
     }
-    const {email, fullname, phone_number, password} = req.body
+    const {email, fullname, password} = req.body
     if (await User.findOne({email})) {
         return res.status(400).json({message: "duplicate email"})
     }
-    const user = new User({email, fullname, phone_number, password})
+    const user = new User({email, fullname, password})
     await user.save()
     res.status(200).json({message: "created successfully"})
 })

@@ -7,7 +7,6 @@ const userSchema = new Schema({
     password: String,
     salt: String,
     fullname: String,
-    phone_number: Number,
     isAdmin: Boolean,
     profileURLPath: {
         type: String,
