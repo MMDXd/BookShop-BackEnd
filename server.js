@@ -7,7 +7,9 @@ const cors = require("cors");
 const app = express()
 app.use(cors({
     credentials: true,
-    origin: "https://sajjad1-moeis.github.io"
+    origin: function (req, callback) {
+        callback(null, { origin: true })
+    }      
 }));
 // initialize database
 require("./src/db")

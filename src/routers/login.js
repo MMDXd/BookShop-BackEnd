@@ -15,7 +15,7 @@ Router.post("/", loginValidate, async (req, res) => {
     }
     const {email, password} = req.body
     if (!(await getUserDataByEmail(email)).valid) {
-        return res.json({valid: false})
+        return res.json({valid: false, success: false})
     }
     const login = await checkUserPassword(email, password)
     
