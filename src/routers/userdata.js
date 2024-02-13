@@ -51,8 +51,8 @@ Router.put("/mydata", [
 
         })
     }
-    const {email, fullname} = req.body
-    await User.updateOne({_id: id}, {email, fullname, profileURLPath: req.body.profileURL})
+    const {email, fullname, job} = req.body
+    await User.updateOne({_id: id}, {email, fullname, profileURLPath: req.body.profileURL, job})
     return res.json({success: true})
 })
 
