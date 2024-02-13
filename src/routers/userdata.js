@@ -1,11 +1,12 @@
 const { User } = require("../db/schemas/userSchema")
-const { isUserLogin, getUserDataById } = require("../utils/auth")
+const { getUserDataById, checkUserPassword } = require("../utils/auth")
 const multer = require("multer")
 const Router = require("express").Router()
 const {unlinkSync} = require("fs")
 const {join} = require("path")
 const { body } = require("express-validator")
-const { validateRequest } = require("../utils/validator")
+const { validateRequest, checkIfUserLogin } = require("../utils/validator")
+const bcrypt = require("bcrypt")
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -20,11 +21,7 @@ const storage = multer.diskStorage({
 
 const userImages = multer({storage})
 
-Router.get("/mydata", async (req, res) => {
-    const login = await isUserLogin(req)
-    if (!login) {
-        return res.status(401).json({login: false})
-    }
+Router.get("/mydata", checkIfUserLogin, async (req, res) => {
     const userdata = await getUserDataById(req.session.user._id)
     userdata.user.password = undefined
     userdata.user.salt = undefined
@@ -34,11 +31,7 @@ Router.get("/mydata", async (req, res) => {
 Router.put("/mydata", [
     body("fullname").isString().notEmpty(),
     body("email").isEmail(),
-], validateRequest, async (req, res) => {
-    const login = await isUserLogin(req)
-    if (!login) {
-        return res.status(401).json({login: false, success: false})
-    }
+], validateRequest, checkIfUserLogin, async (req, res) => {
     const id = req.session.user._id
     const {user} = await getUserDataById(id)
     req.body.profileURL = user.profileURLPath
@@ -61,6 +54,22 @@ Router.put("/mydata", [
     const {name, email, fullname} = req.body
     await User.updateOne({_id: id}, {name, email, fullname, profileURLPath: req.body.profileURL})
     return res.json({success: true})
+})
+
+Router.put("/mydata/password", [
+    body("currentpassword").isString().notEmpty(),
+    body("password").isString().notEmpty(),
+], validateRequest, checkIfUserLogin, async (req, res) => {
+    const id = req.session.user._id
+    const {user} = await getUserDataById(id)
+    const {currentpassword, password} = req.body
+    if (await checkUserPassword(user.email, currentpassword).valid) {
+        const salt = bcrypt.genSaltSync()
+        const hashPassword = bcrypt.hashSync(password, salt)
+        await User.updateOne({_id: id}, {salt, password: hashPassword})
+        return res.json({success: true})
+    }
+    return res.json({success: false})
 })
 
 
