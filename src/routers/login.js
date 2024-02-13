@@ -1,6 +1,7 @@
 const Router = require("express").Router()
-const {body, validationResult} = require("express-validator")
+const {body} = require("express-validator")
 const { checkUserPassword, setUserLogin, getUserDataByEmail } = require("../utils/auth")
+const { validateRequest } = require("../utils/validator")
 
 
 const loginValidate = [
@@ -8,11 +9,7 @@ const loginValidate = [
     body("password").isString().notEmpty(),
 ] 
 
-Router.post("/", loginValidate, async (req, res) => {
-    let validate = validationResult(req)
-    if (!validate.isEmpty()) {
-        return res.status(400).json({message: validate.array({onlyFirstError: true})[0]})
-    }
+Router.post("/", loginValidate, validateRequest, async (req, res) => {
     const {email, password} = req.body
     if (!(await getUserDataByEmail(email)).valid) {
         return res.json({valid: false, success: false})

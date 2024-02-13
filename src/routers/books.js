@@ -1,9 +1,10 @@
 const { book } = require("../db/schemas/bookSchema")
-const { body, validationResult } = require("express-validator")
+const { body } = require("express-validator")
 const { isUserAdmin } = require("../utils/auth")
 const multer = require("multer")
 const {unlinkSync} = require("fs")
 const {join} = require("path")
+const { validateRequest } = require("../utils/validator")
 const Router = require("express").Router()
 
 
@@ -53,14 +54,10 @@ const bookImages = multer({storage})
 Router.post("/", [
     body("name").isString().notEmpty(),
     body("price").isInt(),
-], isUserAdmin, async (req, res) => {
+], isUserAdmin, validateRequest, async (req, res) => {
     bookImages.single("image")(req, res, async (err) => {
         if (err) {
             return res.status(500).json({message: err})
-        }
-        let validate = validationResult(req)
-        if (!validate.isEmpty()) {
-            return res.status(400).json({message: validate.array({onlyFirstError: true})[0]})
         }
         const {name, price, filter} = req.body
         const addBook = new book({name, price, offer: 0, totalSells: 0, filter, imagePath: `/bookImages/${req.imagePath}`})
@@ -74,14 +71,14 @@ Router.put("/", [
     body("price").isInt(),
     body("offer").isInt(),
     body("id").isMongoId(),
-], isUserAdmin, async (req, res) => {
+], isUserAdmin, validateRequest, async (req, res) => {
     const {name, price, offer, id, filter} = req.body
     const currentBook = await book.findById(id)
     if (!currentBook) return res.status(404).json({message: "book not found", success: false})
     let imagePath
     if (req.files.image) {
         try {
-            unlinkSync(join(process.cwd(), `/data/bookImages/${currentBook.imagePath}`))
+            unlinkSync(join(process.cwd(), '/data', currentBook.imagePath))
         } catch {}
         imagePath = await new Promise(resolve => {
             bookImages.single("image")(req, res, async (err) => {
@@ -91,10 +88,6 @@ Router.put("/", [
                 resolve(`/bookImages/${req.imagePath}`)
             })
         })
-    }
-    let validate = validationResult(req)
-    if (!validate.isEmpty()) {
-        return res.status(400).json({message: validate.array({onlyFirstError: true})[0], success: false})
     }
     await book.updateOne({_id: id}, {name, price, offer, filter, imagePath})
     res.json({success: true})

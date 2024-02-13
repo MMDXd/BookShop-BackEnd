@@ -1,6 +1,7 @@
 const Router = require("express").Router()
-const {body, validationResult} = require("express-validator")
+const {body} = require("express-validator")
 const { User } = require("../db/schemas/userSchema")
+const { validateRequest } = require("../utils/validator")
 
 const registerFields = [
     body("email").isEmail(),
@@ -8,11 +9,7 @@ const registerFields = [
     body("fullname").isString().notEmpty(),
 ]
 
-Router.post("/", registerFields, async (req, res) => {
-    let validate = validationResult(req)
-    if (!validate.isEmpty()) {
-        return res.status(400).json({message: validate.array({onlyFirstError: true})[0]})
-    }
+Router.post("/", registerFields, validateRequest, async (req, res) => {
     const {email, fullname, password} = req.body
     if (await User.findOne({email})) {
         return res.status(400).json({message: "duplicate email"})
