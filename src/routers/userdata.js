@@ -42,7 +42,7 @@ Router.put("/mydata", [
     const id = req.session.user._id
     const {user} = await getUserDataById(id)
     req.body.profileURL = user.profileURLPath
-    if (req.files.image) {
+    if (req.files?.image) {
         if (user.profileURLPath != "/userImages/noProfile.jpg") {
             try {
                 unlinkSync(join(process.cwd(), "/data", user.profileURLPath))

@@ -76,7 +76,7 @@ Router.put("/", [
     const currentBook = await book.findById(id)
     if (!currentBook) return res.status(404).json({message: "book not found", success: false})
     let imagePath
-    if (req.files.image) {
+    if (req.files?.image) {
         try {
             unlinkSync(join(process.cwd(), '/data', currentBook.imagePath))
         } catch {}
