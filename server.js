@@ -4,6 +4,7 @@ const session = require("express-session")
 const MongoStore = require("connect-mongo");
 const { default: mongoose } = require("mongoose");
 const cors = require("cors");
+const { existsSync, mkdirSync } = require("fs");
 const app = express()
 app.use(cors({
     credentials: true,
@@ -13,6 +14,10 @@ app.use(cors({
 }));
 // initialize database
 require("./src/db")
+process.env.bookImages = join(process.cwd(), "/data/bookImages")
+process.env.userImages = join(process.cwd(), "/data/userImages")
+if (!existsSync(process.env.bookImages)) mkdirSync(process.env.bookImages)
+if (!existsSync(process.env.userImages)) mkdirSync(process.env.userImages)
 
 
 // middlewares
@@ -28,12 +33,14 @@ const GStore = MongoStore.create({
     stringify: false,
     autoRemove: "interval",
     autoRemoveInterval: 1,
-  });
+});
+app.set('trust proxy');
 app.use(session({
     secret: "HiImSoSecureYouCantHackMyComputer:)",
+    proxy: true,
     cookie: {
         maxAge: (24 * (60 * (60 * 1000))),
-        secure: "auto",
+        secure: process.env.NODE_ENV === 'production',
         sameSite: "none"
     },
     key: "TOKEN",
