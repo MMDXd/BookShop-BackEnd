@@ -10,7 +10,7 @@ const bcrypt = require("bcrypt")
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, "/data/userImages")
+        cb(null, join(process.cwd(), "/data/userImages"))
     },
     filename: function (req, file, cb) {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
@@ -28,28 +28,19 @@ Router.get("/mydata", checkIfUserLogin, async (req, res) => {
     return res.json({login: true, userdata: userdata.user})
 })
 
-Router.put("/mydata", [
-    body("fullname").isString().notEmpty(),
-    body("email").isEmail(),
-], validateRequest, checkIfUserLogin, async (req, res) => {
+Router.post("/mydata", userImages.single("image"), checkIfUserLogin, async (req, res) => {
+    if (!req.body.email || !req.body.fullname) return res.status(400).json({message: "Invalid value"})
     const id = req.session.user._id
     const {user} = await getUserDataById(id)
     req.body.profileURL = user.profileURLPath
-    if (req.files?.image) {
+    if (req.file) {
         if (user.profileURLPath != "/userImages/noProfile.jpg") {
             try {
+                console.log(join(process.cwd(), "/data", user.profileURLPath));
                 unlinkSync(join(process.cwd(), "/data", user.profileURLPath))
             } catch {}
         }
-        req.body.profileURL = await new Promise(resolve => {
-            userImages.single("image")(req, res, async (err) => {
-                if (err) {
-                    return res.status(500).json({message: err, success: false})
-                }
-                resolve(`/userImages/${req.profileImage}`)
-            })
-
-        })
+        req.body.profileURL = `/userImages/${req.profileImage}`
     }
     const {email, fullname, job} = req.body
     await User.updateOne({_id: id}, {email, fullname, profileURLPath: req.body.profileURL, job})
@@ -63,7 +54,7 @@ Router.put("/mydata/password", [
     const id = req.session.user._id
     const {user} = await getUserDataById(id)
     const {currentpassword, password} = req.body
-    if (await checkUserPassword(user.email, currentpassword).valid) {
+    if ((await checkUserPassword(user.email, currentpassword)).valid) {
         const salt = bcrypt.genSaltSync()
         const hashPassword = bcrypt.hashSync(password, salt)
         await User.updateOne({_id: id}, {salt, password: hashPassword})

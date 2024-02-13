@@ -39,7 +39,7 @@ Router.get("/:id", async (req, res) => {
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, '/data/bookImages')
+        cb(null, join(process.cwd(), "/data/bookImages"))
     },
     filename: function (req, file, cb) {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
