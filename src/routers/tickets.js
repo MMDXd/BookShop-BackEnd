@@ -4,7 +4,7 @@ const { isUserAdmin, checkIfUserLogin } = require("../utils/validator")
 const { validateRequest } = require("../utils/validator")
 const { ticketMessage } = require("../db/schemas/ticketMessageSchema")
 const { getUserDataById } = require("../utils/auth")
-const { isAllowToSendMessage, getTicketMessagesById } = require("../utils/ticketManager")
+const { isAllowToSendMessage, getTicketMessagesById, seenPastMessages } = require("../utils/ticketManager")
 const Router = require("express").Router()
 
 
@@ -26,8 +26,7 @@ Router.get("/:id", checkIfUserLogin, async (req, res) => {
         return res.status(403).json({message: "you cant access to this page!", success: false})
     }
     const messages = await getTicketMessagesById(foundTicket._id)
-    foundTicket.messages = messages
-    res.json(foundTicket)
+    res.json({ticket: foundTicket, messages})
 })
 
 Router.post("/", checkIfUserLogin, [
@@ -68,6 +67,23 @@ Router.put("/:id", checkIfUserLogin, [
         ticket: id,
     })
     await newMessage.save()
+    res.json({success: true})
+})
+
+Router.post("/:id/close", checkIfUserLogin, async (req, res) => {
+    const {id} = req.params
+    const userId = req.session.user._id
+    if (!await isAllowToSendMessage(id, userId)) return res.status(403).json({message: "you cant access to this page!", success: false})
+    ticket.updateOne({_id: id}, {status: false})
+    res.json({success: true})
+})
+
+Router.post("/:id/seen", checkIfUserLogin, async (req, res) => {
+    const {id} = req.params
+    const userId = req.session.user._id
+    if (!await isAllowToSendMessage(id, userId)) return res.status(403).json({message: "you cant access to this page!", success: false})
+    const {user} = await getUserDataById(userId)
+    await seenPastMessages(id, user.isAdmin)
     res.json({success: true})
 })
 

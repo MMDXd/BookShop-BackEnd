@@ -25,6 +25,15 @@ const getTicketMessagesById = async (ticketId) => {
     return foundMessages
 }
 
+/**
+ * 
+ * @param {ObjectId} ticketId 
+ * @param {Boolean} seenAdminMessages 
+ */
+const seenPastMessages = async (ticketId, seenAdminMessages = false) => {
+    await ticketMessage.updateMany({ticket: ticketId, isAdminMessage: seenAdminMessages}, {seen: true})
+}
+
 
 /**
  * 
@@ -35,9 +44,13 @@ const getTicketMessagesById = async (ticketId) => {
 const isAllowToSendMessage = async (ticketId, userId) => {
     const {user} = await getUserDataById(userId)
     if (user.isAdmin) return true
-    const ticket = await getTicketById(ticketId)
-    if (!ticket) return false
-    if (ticket.creator == user._id) return true
+    const foundTicket = await getTicketById(ticketId)
+    if (!foundTicket) {
+        return false
+    }
+    if (foundTicket.creator.toString() == user._id.toString()) {
+        return true
+    }
     return false
 }
 
@@ -45,5 +58,6 @@ const isAllowToSendMessage = async (ticketId, userId) => {
 module.exports = {
     getTicketById,
     isAllowToSendMessage,
-    getTicketMessagesById
+    getTicketMessagesById,
+    seenPastMessages
 }
