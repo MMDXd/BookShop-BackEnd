@@ -21,7 +21,12 @@ Router.get("/myTickets", checkIfUserLogin, async (req, res) => {
 
 Router.get("/:id", checkIfUserLogin, async (req, res) => {
     const foundTicket = await ticket.findById(req.params.id)
-    if (!foundTicket) return res.status(404).json({message: "ticket not found"})
+    if (!foundTicket) return res.status(404).json({message: "ticket not found", success: false})
+    if (!await isAllowToSendMessage(foundTicket._id, req.session.user._id)) {
+        return res.status(403).json({message: "you cant access to this page!", success: false})
+    }
+    const messages = await getTicketMessagesById(foundTicket._id)
+    foundTicket.messages = messages
     res.json(foundTicket)
 })
 
@@ -66,15 +71,6 @@ Router.put("/:id", checkIfUserLogin, [
     res.json({success: true})
 })
 
-Router.get("/messages/:id", checkIfUserLogin, async (req, res) => {
-    const userId = req.session.user._id
-    const {id: ticketId} = req.params
-    if (!await isAllowToSendMessage(ticketId, userId)) {
-        return res.status(403).json({message: "you cant access to this page!", success: false})
-    }
-    const messages = await getTicketMessagesById(ticketId)
-    res.status(200).json({messages: messages, success: true})
-})
 
 
 module.exports = {
