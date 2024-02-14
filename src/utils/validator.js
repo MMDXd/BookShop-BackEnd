@@ -1,6 +1,6 @@
 const express = require("express")
 const { validationResult } = require("express-validator")
-const { isUserLogin } = require("./auth")
+const { isUserLogin, getUserDataById } = require("./auth")
 
 /**
  * 
@@ -30,8 +30,26 @@ const checkIfUserLogin = async (req, res, next) => {
     next()
 }
 
+/**
+ * 
+ * @param {express.Request} req 
+ * @param {express.Response} res 
+ * @param {express.NextFunction} next 
+ * @description Middleware for checking if user is admin
+ */
+const isUserAdmin = async (req, res, next) => {
+    if (!await isUserLogin(req)) {
+        return res.status(401).json({login: false, success: false})
+    }
+    const { user } = await getUserDataById(req.session.user._id)
+    if (!user.isAdmin) {
+        return res.status(403).json({login: true, admin: false})
+    }
+    next()
+}
 
 module.exports = {
     validateRequest,
-    checkIfUserLogin
+    checkIfUserLogin,
+    isUserAdmin
 }

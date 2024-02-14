@@ -1,6 +1,6 @@
 const { book } = require("../db/schemas/bookSchema")
 const { body } = require("express-validator")
-const { isUserAdmin } = require("../utils/auth")
+const { isUserAdmin } = require("../utils/validator")
 const multer = require("multer")
 const {unlinkSync} = require("fs")
 const {join} = require("path")

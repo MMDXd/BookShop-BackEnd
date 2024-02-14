@@ -28,6 +28,14 @@ Router.get("/mydata", checkIfUserLogin, async (req, res) => {
     return res.json({login: true, userdata: userdata.user})
 })
 
+Router.get("/:id", async (req, res) => {
+    const userdata = await getUserDataById(req.params.id)
+    userdata.user.password = undefined
+    userdata.user.salt = undefined
+    userdata.user.email = undefined
+    return res.json(userdata.user)
+})
+
 Router.post("/mydata", userImages.single("image"), checkIfUserLogin, async (req, res) => {
     if (!req.body.email || !req.body.fullname) return res.status(400).json({message: "Invalid value"})
     const id = req.session.user._id
