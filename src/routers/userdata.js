@@ -1,11 +1,11 @@
 const { User } = require("../db/schemas/userSchema")
-const { getUserDataById, checkUserPassword } = require("../utils/auth")
+const { getUserDataById, checkUserPassword, deleteUser, setUserAdmin, removeAdminPerm } = require("../utils/auth")
 const multer = require("multer")
 const Router = require("express").Router()
 const {unlinkSync} = require("fs")
 const {join} = require("path")
 const { body } = require("express-validator")
-const { validateRequest, checkIfUserLogin } = require("../utils/validator")
+const { validateRequest, checkIfUserLogin, isUserAdmin } = require("../utils/validator")
 const bcrypt = require("bcrypt")
 
 const storage = multer.diskStorage({
@@ -28,12 +28,23 @@ Router.get("/mydata", checkIfUserLogin, async (req, res) => {
     return res.json({login: true, userdata: userdata.user})
 })
 
+Router.get("/getUsers", isUserAdmin, async (req, res) => {
+    const users = []
+    const allUsers = await User.find()
+    for (const user of allUsers) users.push({_id: user._id, email: user.email, fullname: user.fullname, isAdmin: user.isAdmin, profileURLPath: user.profileURLPath, job: user.job})
+    return res.json({users})
+})
+
 Router.get("/:id", async (req, res) => {
     const userdata = await getUserDataById(req.params.id)
     userdata.user.password = undefined
     userdata.user.salt = undefined
     userdata.user.email = undefined
     return res.json(userdata.user)
+})
+
+Router.delete("/:id", isUserAdmin, async (req, res) => {
+    return res.json({success: await deleteUser(req.params.id)})
 })
 
 Router.post("/mydata", userImages.single("image"), checkIfUserLogin, async (req, res) => {
@@ -69,6 +80,19 @@ Router.put("/mydata/password", [
         return res.json({success: true})
     }
     return res.json({success: false})
+})
+
+Router.put("/setUserAdmin", [
+    body("userId").isMongoId()
+], validateRequest, isUserAdmin, async (req, res) => {
+    const targetUser = req.body.userId
+    return res.json({success: await setUserAdmin(targetUser)})
+})
+Router.put("/setAdminAsUser", [
+    body("userId").isMongoId()
+], validateRequest, isUserAdmin, async (req, res) => {
+    const targetUser = req.body.userId
+    return res.json({success: await removeAdminPerm(targetUser)})
 })
 
 

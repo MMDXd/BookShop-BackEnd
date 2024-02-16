@@ -31,9 +31,28 @@ const getTicketMessagesById = async (ticketId) => {
  * @param {Boolean} seenAdminMessages 
  */
 const seenPastMessages = async (ticketId, seenAdminMessages = false) => {
-    await ticketMessage.updateMany({ticket: ticketId, isAdminMessage: seenAdminMessages}, {seen: true})
+    await ticketMessage.updateMany({ticket: ticketId, isAdminMessage: seenAdminMessages, seen: false}, {seen: true})
 }
 
+/**
+ * 
+ * @param {ObjectId} ticketId 
+ * @param {Boolean} isAdminRequest 
+ * @returns {Boolean}
+ */
+const checkTicketSeen = async (ticketId, isAdminRequest = false) => {
+    const foundTicket = await getTicketById(ticketId)
+    if (!foundTicket) return true
+    const ticketMessages = await getTicketMessagesById(ticketId)
+    if (!ticketMessages) return true
+    const lastMessage = ticketMessages.pop()
+
+    if (lastMessage.isAdminMessage == isAdminRequest) return true
+    if (lastMessage.isAdminMessage && !isAdminRequest && !lastMessage.seen) return false
+    if (!lastMessage.isAdminMessage && !isAdminRequest) return true
+    if (!lastMessage.isAdminMessage && isAdminRequest && !lastMessage.seen) return false
+    return true
+}
 
 /**
  * 
@@ -59,5 +78,6 @@ module.exports = {
     getTicketById,
     isAllowToSendMessage,
     getTicketMessagesById,
-    seenPastMessages
+    seenPastMessages,
+    checkTicketSeen
 }

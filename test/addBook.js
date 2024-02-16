@@ -3,7 +3,7 @@ const { book } = require("../src/db/schemas/bookSchema");
 
 // Connect to MongoDB
 mongoose
-  .connect("mongodb://localhost:27017/bookshop", {
+  .connect(process.env.DB_PATH || process.env.DATABASE_URL || process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/bookshop", {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })

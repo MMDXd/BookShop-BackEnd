@@ -4,19 +4,23 @@ const { isUserAdmin, checkIfUserLogin } = require("../utils/validator")
 const { validateRequest } = require("../utils/validator")
 const { ticketMessage } = require("../db/schemas/ticketMessageSchema")
 const { getUserDataById } = require("../utils/auth")
-const { isAllowToSendMessage, getTicketMessagesById, seenPastMessages } = require("../utils/ticketManager")
+const { isAllowToSendMessage, getTicketMessagesById, seenPastMessages, getTicketById, checkTicketSeen } = require("../utils/ticketManager")
 const Router = require("express").Router()
 
 
 
 Router.get("/", isUserAdmin, async (req, res) => {
     const tickets = await ticket.find().sort({ createDate: -1 })
-    res.json({tickets})
+    const returnTickets = []
+    for (const ticket of tickets) returnTickets.push({_id: ticket._id, title: ticket.title, subject: ticket.subject, createDate: ticket.createDate, status: ticket.status, creator: ticket.creator, seen: await checkTicketSeen(ticket._id, true)})
+    res.json({tickets: returnTickets})
 })
 
 Router.get("/myTickets", checkIfUserLogin, async (req, res) => {
     const tickets = await ticket.find({creator: req.session.user._id}).sort({ createDate: -1 })
-    res.json({tickets})
+    let returnTickets = []
+    for (const ticket of tickets) returnTickets.push({_id: ticket._id, title: ticket.title, subject: ticket.subject, createDate: ticket.createDate, status: ticket.status, creator: ticket.creator, seen: await checkTicketSeen(ticket._id, true)})
+    res.json({tickets: returnTickets})
 })
 
 Router.get("/:id", checkIfUserLogin, async (req, res) => {
@@ -26,7 +30,7 @@ Router.get("/:id", checkIfUserLogin, async (req, res) => {
         return res.status(403).json({message: "you cant access to this page!", success: false})
     }
     const messages = await getTicketMessagesById(foundTicket._id)
-    res.json({ticket: foundTicket, messages})
+    res.json({ticket: {_id: foundTicket._id, title: foundTicket.title, subject: foundTicket.subject, createDate: foundTicket.createDate, status: foundTicket.status, creator: foundTicket.creator, seen: await checkTicketSeen(foundTicket._id, true)}, messages})
 })
 
 Router.post("/", checkIfUserLogin, [
@@ -57,6 +61,8 @@ Router.put("/:id", checkIfUserLogin, [
     const {id} = req.params
     const userId = req.session.user._id
     if (!await isAllowToSendMessage(id, userId)) return res.status(403).json({message: "you cant access to this page!", success: false})
+    const ticketData = await getTicketById(id)
+    if (!ticketData.status) return res.status(400).json({message: "this ticket is closed!", success: false})
     const {user} = await getUserDataById(userId)
     const newMessage = new ticketMessage({
         content: message,
@@ -74,7 +80,7 @@ Router.post("/:id/close", checkIfUserLogin, async (req, res) => {
     const {id} = req.params
     const userId = req.session.user._id
     if (!await isAllowToSendMessage(id, userId)) return res.status(403).json({message: "you cant access to this page!", success: false})
-    ticket.updateOne({_id: id}, {status: false})
+    await ticket.updateOne({_id: id}, {status: false})
     res.json({success: true})
 })
 
