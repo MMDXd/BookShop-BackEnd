@@ -23,6 +23,7 @@ if (!existsSync(process.env.userImages)) mkdirSync(process.env.userImages)
 // middlewares
 app.use("/bookImages", express.static(join(process.cwd(), "./data/bookImages")))
 app.use("/userImages", express.static(join(process.cwd(), "./data/userImages")))
+app.use("/blogImages", express.static(join(process.cwd(), "./data/blogImages")))
 app.use(express.json())
 app.use(express.urlencoded({extended: true}))
 

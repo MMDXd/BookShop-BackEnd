@@ -29,9 +29,9 @@ Router.get("/", async (req, res) => {
 Router.get("/:id", async (req, res) => {
     try {
         const id = req.params.id
-        const book = await book.findById(id)
-        if (!book) return res.status(404).json({message: "book not found!"})
-        res.json({book})
+        const foundBook = await book.findById(id)
+        if (!foundBook) return res.status(404).json({message: "book not found!"})
+        res.json({foundBook})
     } catch (error) {
         res.status(500).json({ message: error.message })
     }
